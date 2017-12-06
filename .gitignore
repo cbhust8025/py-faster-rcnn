@@ -10,3 +10,5 @@ lib/pycocotools/_mask.so
 *.caffemodel
 
 *.jpg
+
+.vscode/tags
