@@ -38,6 +38,7 @@ NETS = {'vgg16': ('VGG16',
 
 
 def vis_detections(im, class_name, dets, thresh=0.5):
+    print "Run the vis_detections()"
     """Draw detected bounding boxes."""
     inds = np.where(dets[:, -1] >= thresh)[0]
     if len(inds) == 0:
@@ -70,6 +71,7 @@ def vis_detections(im, class_name, dets, thresh=0.5):
     plt.draw()
 
 def demo(net, image_name):
+    print "Run the demo()"
     """Detect object classes in an image using pre-computed object proposals."""
 
     # Load the demo image
@@ -99,6 +101,7 @@ def demo(net, image_name):
 
 def parse_args():
     """Parse input arguments."""
+    print "Run the parse_args()"
     parser = argparse.ArgumentParser(description='Faster R-CNN demo')
     parser.add_argument('--gpu', dest='gpu_id', help='GPU device id to use [0]',
                         default=0, type=int)
@@ -109,10 +112,11 @@ def parse_args():
                         choices=NETS.keys(), default='vgg16')
 
     args = parser.parse_args()
-
+    print "args:", args
     return args
 
 if __name__ == '__main__':
+    print "Run the __main__()"
     cfg.TEST.HAS_RPN = True  # Use RPN for proposals
 
     args = parse_args()
