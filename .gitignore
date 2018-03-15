@@ -12,3 +12,7 @@ lib/pycocotools/_mask.so
 *.jpg
 
 .vscode/tags
+
+*.pkl
+
+*.json
