@@ -69,7 +69,7 @@ def get_roidb(imdb_name, rpn_file=None):
 
 def get_solvers(net_name):
     # Faster R-CNN Alternating Optimization
-    n = 'faster_rcnn_alt_opt'
+    n = 'conv4_faster_rcnn_alt_opt'
     # Solver for each training stage
     solvers = [[net_name, n, 'stage1_rpn_solver60k80k.pt'],
                [net_name, n, 'stage1_fast_rcnn_solver30k40k.pt'],
@@ -79,7 +79,8 @@ def get_solvers(net_name):
     # Iterations for each training stage
     # max_iters = [80000, 40000, 80000, 40000]
     # max_iters = [160000, 80000, 160000, 80000]
-    max_iters = [20000, 10000, 20000, 10000]
+    # max_iters = [20000, 10000, 20000, 10000]
+    max_iters = [2000, 1000, 2000, 1000]
     # max_iters = [800, 400, 800, 400]
     # max_iters = [40000, 20000, 40000, 20000]
     # max_iters = [100, 100, 100, 100]
@@ -331,7 +332,7 @@ if __name__ == '__main__':
     # Create final model (just a copy of the last stage)
     final_path = os.path.join(
             os.path.dirname(fast_rcnn_stage2_out['model_path']),
-            args.net_name + '_faster_rcnn_final.caffemodel')
+            args.net_name + '_conv4_faster_rcnn_final.caffemodel')
     print 'cp {} -> {}'.format(
             fast_rcnn_stage2_out['model_path'], final_path)
     shutil.copy(fast_rcnn_stage2_out['model_path'], final_path)
