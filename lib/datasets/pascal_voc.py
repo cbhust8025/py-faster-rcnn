@@ -28,9 +28,13 @@ class pascal_voc(imdb):
                             else devkit_path
         self._data_path = os.path.join(self._devkit_path, 'VOC' + self._year)
         self._classes = ('__background__', # always index 0
-                         'person')
+                         'aeroplane', 'bicycle', 'bird', 'boat',
+                         'bottle', 'bus', 'car', 'cat', 'chair',
+                         'cow', 'diningtable', 'dog', 'horse',
+                         'motorbike', 'person', 'pottedplant',
+                         'sheep', 'sofa', 'train', 'tvmonitor')
         self._class_to_ind = dict(zip(self.classes, xrange(self.num_classes)))
-        self._image_ext = '.jpeg'
+        self._image_ext = '.jpg'
         self._image_index = self._load_image_set_index()
         # Default to roidb handler
         self._roidb_handler = self.selective_search_roidb
@@ -161,7 +165,6 @@ class pascal_voc(imdb):
         assert os.path.exists(filename), \
                'Selective search data not found at: {}'.format(filename)
         raw_data = sio.loadmat(filename)['boxes'].ravel()
-
         box_list = []
         for i in xrange(raw_data.shape[0]):
             boxes = raw_data[i][:, (1, 0, 3, 2)] - 1
@@ -170,7 +173,6 @@ class pascal_voc(imdb):
             keep = ds_utils.filter_small_boxes(boxes, self.config['min_size'])
             boxes = boxes[keep, :]
             box_list.append(boxes)
-
         return self.create_roidb_from_box_list(box_list, gt_roidb)
 
     def _load_pascal_annotation(self, index):
