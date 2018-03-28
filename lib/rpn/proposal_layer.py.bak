@@ -107,8 +107,6 @@ class ProposalLayer(caffe.Layer):
         scores = bottom[0].data[:, self._num_anchors:, :, :]
         bbox_deltas = bottom[1].data
         im_info = bottom[2].data[0, :]
-        scores_1 = bottom[3].data[:, self._num_anchors:, :, :]
-        bbox_deltas_1 = bottom[4].data
         # ProposalLayer scores.shape:  (1, 9, 51, 39)
         # ProposalLayer bbox_deltas.shape:  (1, 36, 51, 39)
         # ProposalLayer im_info:  [ 800.，600.，1.60000002]
@@ -116,10 +114,6 @@ class ProposalLayer(caffe.Layer):
         print "ProposalLayer scores.shape: ", scores.shape
         print "ProposalLayer bbox_deltas: ", bbox_deltas
         print "ProposalLayer bbox_deltas.shape: ", bbox_deltas.shape
-        print "ProposalLayer scores_1: ", scores
-        print "ProposalLayer scores_1.shape: ", scores.shape
-        print "ProposalLayer bbox_deltas_1: ", bbox_deltas
-        print "ProposalLayer bbox_deltas_1.shape: ", bbox_deltas.shape
         print "ProposalLayer im_info: ", im_info
 
 
@@ -189,9 +183,6 @@ class ProposalLayer(caffe.Layer):
         bbox_deltas = bbox_deltas.transpose((0, 2, 3, 1)).reshape((-1, 4))
         print "ProposalLayer bbox_deltas: ", bbox_deltas
         print "ProposalLayer bbox_deltas.shape: ", bbox_deltas.shape
-        bbox_deltas_1 = bbox_deltas_1.transpose((0, 2, 3, 1)).reshape((-1, 4))
-        print "ProposalLayer bbox_deltas_1: ", bbox_deltas_1
-        print "ProposalLayer bbox_deltas_1.shape: ", bbox_deltas_1.shape
         # Same story for the scores:
         #
         # scores are (1, A, H, W) format
@@ -201,25 +192,16 @@ class ProposalLayer(caffe.Layer):
         scores = scores.transpose((0, 2, 3, 1)).reshape((-1, 1))
         print "ProposalLayer scores: ", scores
         print "ProposalLayer scores.shape: ", scores.shape
-        scores_1 = scores_1.transpose((0, 2, 3, 1)).reshape((-1, 1))
-        print "ProposalLayer scores_1: ", scores_1
-        print "ProposalLayer scores_1.shape: ", scores_1.shape
         # 将上面产生的锚窗+滑窗结果附加到bbox_deltas上面产生最终的兴趣区域
         # Convert anchors into proposals via bbox transformations
         proposals = bbox_transform_inv(anchors, bbox_deltas)
         print "ProposalLayer proposals: ", proposals
         print "ProposalLayer proposals.shape: ", proposals.shape
-        proposals_1 = bbox_transform_inv(anchors, bbox_deltas_1)
-        print "ProposalLayer proposals_1: ", proposals_1
-        print "ProposalLayer proposals_1.shape: ", proposals_1.shape
         # 将产生的兴趣区域映射回原图
         # 2. clip predicted boxes to image
         proposals = clip_boxes(proposals, im_info[:2])
         print "ProposalLayer proposals: ", proposals
         print "ProposalLayer proposals.shape: ", proposals.shape
-        proposals_1 = clip_boxes(proposals_1, im_info[:2])
-        print "ProposalLayer proposals_1: ", proposals_1
-        print "ProposalLayer proposals_1.shape: ", proposals_1.shape
         # 将超过原图边界的区域，滤除掉
         # 3. remove predicted boxes with either height or width < threshold
         # (NOTE: convert min_size to input image scale stored in im_info[2])
@@ -233,16 +215,6 @@ class ProposalLayer(caffe.Layer):
         print "ProposalLayer proposals.shape: ", proposals.shape
         print "ProposalLayer scores: ", scores
         print "ProposalLayer scores.shape: ", scores.shape
-        keep_1 = _filter_boxes(proposals_1, min_size * im_info[2])
-        proposals_1 = proposals_1[keep_1, :]
-        scores_1 = scores_1[keep_1]
-
-        print "ProposalLayer keep_1: ", keep_1
-        print "ProposalLayer keep_1.shape: ", len(keep_1)
-        print "ProposalLayer proposals_1: ", proposals_1
-        print "ProposalLayer proposals_1.shape: ", proposals_1.shape
-        print "ProposalLayer scores_1: ", scores_1
-        print "ProposalLayer scores_1.shape: ", scores_1.shape
         # 将proposal，scores按照scores排序并取出前RPN_PRE_NMS_TOP_N个区域来
         # 4. sort all (proposal, score) pairs by score from highest to lowest
         # 5. take top pre_nms_topN (e.g. 6000)
@@ -258,26 +230,13 @@ class ProposalLayer(caffe.Layer):
         print "ProposalLayer proposals.shape: ", proposals.shape
         print "ProposalLayer scores: ", scores
         print "ProposalLayer scores.shape: ", scores.shape
-
-        order_1 = scores_1.ravel().argsort()[::-1]
-        if pre_nms_topN > 0:
-            order_1 = order_1[:pre_nms_topN]
-        proposals_1 = proposals_1[order_1, :]
-        scores_1 = scores_1[order_1]
-
-        print "ProposalLayer order_1: ", order_1
-        print "ProposalLayer order_1.shape: ", order_1.shape
-        print "ProposalLayer proposals_1: ", proposals_1
-        print "ProposalLayer proposals_1.shape: ", proposals_1.shape
-        print "ProposalLayer scores_1: ", scores_1
-        print "ProposalLayer scores_1.shape: ", scores_1.shape
         # 应用nms算法，来进行过滤区域，并最终剩余after_nms_topN个
         # 6. apply nms (e.g. threshold = 0.7)
         # 7. take after_nms_topN (e.g. 300)
         # 8. return the top proposals (-> RoIs top)
         keep = nms(np.hstack((proposals, scores)), nms_thresh)
         if post_nms_topN > 0:
-            keep = keep[:post_nms_topN/2]
+            keep = keep[:post_nms_topN]
         proposals = proposals[keep, :]
         scores = scores[keep]
 
@@ -287,24 +246,7 @@ class ProposalLayer(caffe.Layer):
         print "ProposalLayer proposals.shape: ", proposals.shape
         print "ProposalLayer scores: ", scores
         print "ProposalLayer scores.shape: ", scores.shape
-
-        keep_1 = nms(np.hstack((proposals_1, scores_1)), nms_thresh)
-        if post_nms_topN > 0:
-            keep_1 = keep_1[:post_nms_topN/2]
-        proposals_1 = proposals_1[keep_1, :]
-        scores_1 = scores_1[keep_1]
-
-        print "ProposalLayer keep_1: ", keep_1
-        print "ProposalLayer keep_1.shape: ", len(keep_1)
-        print "ProposalLayer proposals_1: ", proposals_1
-        print "ProposalLayer proposals_1.shape: ", proposals_1.shape
-        print "ProposalLayer scores_1: ", scores_1
-        print "ProposalLayer scores_1.shape: ", scores_1.shape
         # 准备结果，送入下一层roi-data层中
-        proposals = np.vstack((proposals.astype(np.float32, copy=False),
-                    proposals_1.astype(np.float32, copy=False)))
-        print "ProposalLayer proposals: ", proposals
-        print "ProposalLayer proposals.shape: ", proposals.shape
         # Output rois blob
         # Our RPN implementation only supports a single input image, so all
         # batch inds are 0

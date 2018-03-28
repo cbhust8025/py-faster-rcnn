@@ -27,7 +27,7 @@ case $DATASET in
     TRAIN_IMDB="voc_2007_trainval"
     TEST_IMDB="voc_2007_test"
     PT_DIR="pascal_voc"
-    ITERS=300
+    ITERS=700
     ;;
   coco)
     # This is a very long and slow training schedule
@@ -44,16 +44,16 @@ case $DATASET in
     ;;
 esac
 
-LOG="experiments/logs/faster_rcnn_end2end_${NET}_${EXTRA_ARGS_SLUG}.txt.`date +'%Y-%m-%d_%H-%M-%S'`"
+LOG="experiments/logs/d_faster_rcnn_end2end_${NET}_${EXTRA_ARGS_SLUG}.txt.`date +'%Y-%m-%d_%H-%M-%S'`"
 exec &> >(tee -a "$LOG")
 echo Logging output to "$LOG"
 
 time ./tools/train_net.py --gpu ${GPU_ID} \
-  --solver models/${PT_DIR}/${NET}/faster_rcnn_end2end/solver.prototxt \
+  --solver models/${PT_DIR}/${NET}/d_faster_rcnn_end2end/solver.prototxt \
   --weights data/imagenet_models/${NET}.v2.caffemodel \
   --imdb ${TRAIN_IMDB} \
   --iters ${ITERS} \
-  --cfg experiments/cfgs/faster_rcnn_end2end.yml \
+  --cfg experiments/cfgs/d_faster_rcnn_end2end.yml \
   ${EXTRA_ARGS}
 
 set +x
@@ -61,8 +61,8 @@ NET_FINAL=`grep -B 1 "done solving" ${LOG} | grep "Wrote snapshot" | awk '{print
 set -x
 
 time ./tools/test_net.py --gpu ${GPU_ID} \
-  --def models/${PT_DIR}/${NET}/faster_rcnn_end2end/test.prototxt \
+  --def models/${PT_DIR}/${NET}/d_faster_rcnn_end2end/test.prototxt \
   --net ${NET_FINAL} \
   --imdb ${TEST_IMDB} \
-  --cfg experiments/cfgs/faster_rcnn_end2end.yml \
+  --cfg experiments/cfgs/d_faster_rcnn_end2end.yml \
   ${EXTRA_ARGS}
