@@ -144,7 +144,7 @@ layer {
 layer {
   name: "rpn_conv/3x3_1"
   type: "Convolution"
-  bottom: "conv4"
+  bottom: "conv3"
   top: "rpn/output_1"
   param { lr_mult: 1.0 }
   param { lr_mult: 2.0 }
@@ -361,20 +361,9 @@ layer {
   bottom: 'rpn_cls_prob_reshape'
   bottom: 'rpn_bbox_pred'
   bottom: 'im_info'
-  top: 'rois'
-  python_param {
-    module: 'rpn.proposal_layer'
-    layer: 'ProposalLayer'
-    param_str: "'feat_stride': 16"
-  }
-}
-layer {
-  name: 'proposal_1'
-  type: 'Python'
   bottom: 'rpn_cls_prob_reshape_1'
   bottom: 'rpn_bbox_pred_1'
-  bottom: 'im_info'
-  top: 'rois_1'
+  top: 'rois'
   python_param {
     module: 'rpn.proposal_layer'
     layer: 'ProposalLayer'
@@ -387,22 +376,9 @@ layer {
 layer {
   name: "roi_pool_conv5"
   type: "ROIPooling"
-  bottom: "conv5"k
-  bottom: 'rpn_rois_1'
+  bottom: "conv5"
   bottom: "rois"
   top: "roi_pool_conv5"
-  roi_pooling_param {
-    pooled_w: 6
-    pooled_h: 6
-    spatial_scale: 0.0625 # 1/16
-  }
-}
-layer {
-  name: "roi_pool_conv5_1"
-  type: "ROIPooling"
-  bottom: "conv4"
-  bottom: "rois_1"
-  top: "roi_pool_conv5_1"
   roi_pooling_param {
     pooled_w: 6
     pooled_h: 6
