@@ -389,7 +389,6 @@ layer {
   name: "fc6"
   type: "InnerProduct"
   bottom: "roi_pool_conv5"
-  bottom: "roi_pool_conv5_1"
   top: "fc6"
   inner_product_param {
     num_output: 4096
